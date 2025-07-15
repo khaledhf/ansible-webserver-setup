@@ -1,0 +1,38 @@
+---
+- name: Deploy to Staging Environment
+  hosts: webservers
+  become: yes
+  vars_files:
+    - ../group_vars/all.yml
+  roles:
+    - webserver
+  tags: [staging, deploy]
+
+- name: Deploy Monitoring to Staging
+  hosts: monitoring
+  become: yes
+  vars_files:
+    - ../group_vars/all.yml
+  roles:
+    - monitoring
+  tags: [staging, monitoring]
+
+- name: Run Health Checks
+  hosts: webservers
+  become: no
+  tasks:
+    - name: Check web server health
+      uri:
+        url: "http://{{ ansible_host }}/health"
+        method: GET
+        status_code: 200
+      register: health_check
+      retries: 3
+      delay: 10
+      tags: [staging, health]
+
+    - name: Display health check results
+      debug:
+        msg: "Health check passed for {{ ansible_host }}"
+      when: health_check.status == 200
+      tags: [staging, health] 

@@ -1,0 +1,147 @@
+---
+# Install required packages
+- name: Install monitoring packages
+  apt:
+    name:
+      - prometheus
+      - grafana
+      - curl
+      - wget
+    state: present
+    update_cache: yes
+  tags: [packages, install]
+
+# Create monitoring directories
+- name: Create monitoring directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: prometheus
+    group: prometheus
+  loop:
+    - /etc/prometheus
+    - /var/lib/prometheus
+    - /var/log/prometheus
+  tags: [monitoring, setup]
+
+# Configure Prometheus
+- name: Configure Prometheus
+  template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+    mode: '0644'
+  notify: restart prometheus
+  tags: [monitoring, prometheus]
+
+# Configure Prometheus systemd service
+- name: Configure Prometheus service
+  template:
+    src: prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+    mode: '0644'
+  notify: restart prometheus
+  tags: [monitoring, prometheus]
+
+# Configure Grafana
+- name: Configure Grafana
+  template:
+    src: grafana.ini.j2
+    dest: /etc/grafana/grafana.ini
+    owner: grafana
+    group: grafana
+    mode: '0644'
+  notify: restart grafana
+  tags: [monitoring, grafana]
+
+# Create Grafana datasource
+- name: Create Grafana datasource
+  template:
+    src: datasource.yml.j2
+    dest: /etc/grafana/provisioning/datasources/prometheus.yml
+    owner: grafana
+    group: grafana
+    mode: '0644'
+  notify: restart grafana
+  tags: [monitoring, grafana]
+
+# Create Grafana dashboard
+- name: Create Grafana dashboard
+  template:
+    src: dashboard.yml.j2
+    dest: /etc/grafana/provisioning/dashboards/main.yml
+    owner: grafana
+    group: grafana
+    mode: '0644'
+  notify: restart grafana
+  tags: [monitoring, grafana]
+
+# Copy dashboard JSON
+- name: Copy dashboard JSON
+  template:
+    src: node-exporter-dashboard.json.j2
+    dest: /etc/grafana/provisioning/dashboards/node-exporter.json
+    owner: grafana
+    group: grafana
+    mode: '0644'
+  notify: restart grafana
+  tags: [monitoring, grafana]
+
+# Enable and start services
+- name: Enable and start Prometheus
+  systemd:
+    name: prometheus
+    state: started
+    enabled: yes
+    daemon_reload: yes
+  tags: [monitoring, prometheus]
+
+- name: Enable and start Grafana
+  systemd:
+    name: grafana-server
+    state: started
+    enabled: yes
+    daemon_reload: yes
+  tags: [monitoring, grafana]
+
+# Configure firewall for monitoring ports
+- name: Allow monitoring ports
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop:
+    - "{{ prometheus_port }}"
+    - "{{ grafana_port }}"
+    - "{{ node_exporter_port }}"
+  when: ufw_enabled
+  tags: [monitoring, firewall]
+
+# Health checks
+- name: Check Prometheus health
+  uri:
+    url: http://localhost:{{ prometheus_port }}/-/healthy
+    method: GET
+  register: prometheus_health
+  retries: 3
+  delay: 10
+  tags: [monitoring, health]
+
+- name: Check Grafana health
+  uri:
+    url: http://localhost:{{ grafana_port }}/api/health
+    method: GET
+  register: grafana_health
+  retries: 3
+  delay: 10
+  tags: [monitoring, health]
+
+- name: Display monitoring status
+  debug:
+    msg: 
+      - "Prometheus is running on port {{ prometheus_port }}"
+      - "Grafana is running on port {{ grafana_port }}"
+      - "Node Exporter is running on port {{ node_exporter_port }}"
+  tags: [monitoring, status] 

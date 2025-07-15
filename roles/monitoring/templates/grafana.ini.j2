@@ -1,0 +1,49 @@
+[paths]
+provisioning = /etc/grafana/provisioning
+
+[server]
+protocol = http
+http_port = {{ grafana_port }}
+domain = {{ ansible_hostname }}
+root_url = http://{{ ansible_hostname }}:{{ grafana_port }}/
+serve_from_sub_path = false
+
+[database]
+type = sqlite3
+path = /var/lib/grafana/grafana.db
+
+[security]
+admin_user = admin
+admin_password = {{ grafana_admin_password }}
+secret_key = {{ vault_grafana_secret_key }}
+disable_initial_admin_creation = false
+allow_embedding = true
+cookie_secure = false
+cookie_samesite = lax
+
+[users]
+allow_sign_up = false
+allow_org_create = false
+auto_assign_org = true
+auto_assign_org_role = Viewer
+
+[auth.anonymous]
+enabled = false
+
+[log]
+mode = console file
+level = info
+
+[metrics]
+enabled = true
+interval_seconds = 10
+
+[alerting]
+enabled = true
+execute_alerts = true
+
+[unified_alerting]
+enabled = true
+
+[feature_toggles]
+enable = publicDashboards 

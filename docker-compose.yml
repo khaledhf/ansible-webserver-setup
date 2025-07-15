@@ -1,0 +1,141 @@
+version: '3.8'
+
+services:
+  # Staging Environment
+  web-staging:
+    image: ubuntu:20.04
+    container_name: web-staging-01
+    hostname: web-staging-01
+    ports:
+      - "8080:80"
+      - "8443:443"
+    environment:
+      - DEBIAN_FRONTEND=noninteractive
+    command: >
+      bash -c "
+        apt-get update && apt-get install -y openssh-server sudo python3 curl
+        useradd -m -s /bin/bash ubuntu
+        echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+        mkdir -p /home/ubuntu/.ssh
+        echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDEL9RA14AjwIQ/IZVlzCmKyKixg1ZRwdhiOLcnqRUDcs1aPoectUYWj5rfbr6RDM4ScpgRc3UR0dQHI5iSQ6t1x+oRcWfXCvH89EpcM13yoORcvjTCFLLv3/DwelYRFIeo/y/990rArUn8yOzJmTAMsjjvZTlU6XzUAXPzzK/X+YI7tFBNQITZ7V99YV28M6f3uO9XzgWtyrTr+AQY+x8XLOhO1raE3FKgO44Dvjj3qxmlh7F6gxa0W6UKcEC39acGhLW+OJIBrNi/fptNuv/r8ffe/zeNxqFdsZxAxJsu8VgMTtawjLXIpson7hXiJfMps/4RfSQ8Qp/N1PbU4rvjcqlpUDxdbXHX7R76MWuHgqD6Q4JysMVsoa+xC+Ye7li5BaWErw8GnzhJ13FKDPyjiRzzV+D8gDiUQv2nXkTxHGWgCrz/9dl0YYmGmP3w4w91mbRa7cGYRtYt38e//RLZBgOYPvP4UhhZnbzerEuSgXwM6TuOgaJbeCpm5l80gZ9bj+5OevHKY/+efkI9PhcphTBqUOT5MHaiV5nGKJF4jGPwczKcRm1CLV6Yv7AN0pCWjxnAjRSg/ciK10/y/hV58g3j2jNl32z8/cxCgfnyk2tCm/cblD0edb7MjpwdDsj6NzkFk6vZh2l897Y6xdyJ9MUivp9ZkwIp6vECKSo0EQ== staging-docker' > /home/ubuntu/.ssh/authorized_keys
+        chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+        chmod 700 /home/ubuntu/.ssh
+        chmod 600 /home/ubuntu/.ssh/authorized_keys
+        service ssh start
+        tail -f /dev/null
+      "
+    networks:
+      - staging-network
+
+  monitor-staging:
+    image: ubuntu:20.04
+    container_name: monitor-staging-01
+    hostname: monitor-staging-01
+    ports:
+      - "9090:9090"
+      - "3000:3000"
+    environment:
+      - DEBIAN_FRONTEND=noninteractive
+    command: >
+      bash -c "
+        apt-get update && apt-get install -y openssh-server sudo python3 curl
+        useradd -m -s /bin/bash ubuntu
+        echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+        mkdir -p /home/ubuntu/.ssh
+        echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDEL9RA14AjwIQ/IZVlzCmKyKixg1ZRwdhiOLcnqRUDcs1aPoectUYWj5rfbr6RDM4ScpgRc3UR0dQHI5iSQ6t1x+oRcWfXCvH89EpcM13yoORcvjTCFLLv3/DwelYRFIeo/y/990rArUn8yOzJmTAMsjjvZTlU6XzUAXPzzK/X+YI7tFBNQITZ7V99YV28M6f3uO9XzgWtyrTr+AQY+x8XLOhO1raE3FKgO44Dvjj3qxmlh7F6gxa0W6UKcEC39acGhLW+OJIBrNi/fptNuv/r8ffe/zeNxqFdsZxAxJsu8VgMTtawjLXIpson7hXiJfMps/4RfSQ8Qp/N1PbU4rvjcqlpUDxdbXHX7R76MWuHgqD6Q4JysMVsoa+xC+Ye7li5BaWErw8GnzhJ13FKDPyjiRzzV+D8gDiUQv2nXkTxHGWgCrz/9dl0YYmGmP3w4w91mbRa7cGYRtYt38e//RLZBgOYPvP4UhhZnbzerEuSgXwM6TuOgaJbeCpm5l80gZ9bj+5OevHKY/+efkI9PhcphTBqUOT5MHaiV5nGKJF4jGPwczKcRm1CLV6Yv7AN0pCWjxnAjRSg/ciK10/y/hV58g3j2jNl32z8/cxCgfnyk2tCm/cblD0edb7MjpwdDsj6NzkFk6vZh2l897Y6xdyJ9MUivp9ZkwIp6vECKSo0EQ== staging-docker' > /home/ubuntu/.ssh/authorized_keys
+        chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+        chmod 700 /home/ubuntu/.ssh
+        chmod 600 /home/ubuntu/.ssh/authorized_keys
+        service ssh start
+        tail -f /dev/null
+      "
+    networks:
+      - staging-network
+
+  # Production Environment
+  web-prod-01:
+    image: ubuntu:20.04
+    container_name: web-prod-01
+    hostname: web-prod-01
+    ports:
+      - "8081:80"
+      - "8444:443"
+    environment:
+      - DEBIAN_FRONTEND=noninteractive
+    command: >
+      bash -c "
+        apt-get update && apt-get install -y openssh-server sudo python3 curl
+        useradd -m -s /bin/bash ubuntu
+        echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+        mkdir -p /home/ubuntu/.ssh
+        echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDEL9RA14AjwIQ/IZVlzCmKyKixg1ZRwdhiOLcnqRUDcs1aPoectUYWj5rfbr6RDM4ScpgRc3UR0dQHI5iSQ6t1x+oRcWfXCvH89EpcM13yoORcvjTCFLLv3/DwelYRFIeo/y/990rArUn8yOzJmTAMsjjvZTlU6XzUAXPzzK/X+YI7tFBNQITZ7V99YV28M6f3uO9XzgWtyrTr+AQY+x8XLOhO1raE3FKgO44Dvjj3qxmlh7F6gxa0W6UKcEC39acGhLW+OJIBrNi/fptNuv/r8ffe/zeNxqFdsZxAxJsu8VgMTtawjLXIpson7hXiJfMps/4RfSQ8Qp/N1PbU4rvjcqlpUDxdbXHX7R76MWuHgqD6Q4JysMVsoa+xC+Ye7li5BaWErw8GnzhJ13FKDPyjiRzzV+D8gDiUQv2nXkTxHGWgCrz/9dl0YYmGmP3w4w91mbRa7cGYRtYt38e//RLZBgOYPvP4UhhZnbzerEuSgXwM6TuOgaJbeCpm5l80gZ9bj+5OevHKY/+efkI9PhcphTBqUOT5MHaiV5nGKJF4jGPwczKcRm1CLV6Yv7AN0pCWjxnAjRSg/ciK10/y/hV58g3j2jNl32z8/cxCgfnyk2tCm/cblD0edb7MjpwdDsj6NzkFk6vZh2l897Y6xdyJ9MUivp9ZkwIp6vECKSo0EQ== staging-docker' > /home/ubuntu/.ssh/authorized_keys
+        chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+        chmod 700 /home/ubuntu/.ssh
+        chmod 600 /home/ubuntu/.ssh/authorized_keys
+        service ssh start
+        tail -f /dev/null
+      "
+    networks:
+      - production-network
+
+  web-prod-02:
+    image: ubuntu:20.04
+    container_name: web-prod-02
+    hostname: web-prod-02
+    ports:
+      - "8082:80"
+      - "8445:443"
+    environment:
+      - DEBIAN_FRONTEND=noninteractive
+    command: >
+      bash -c "
+        apt-get update && apt-get install -y openssh-server sudo python3 curl
+        useradd -m -s /bin/bash ubuntu
+        echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+        mkdir -p /home/ubuntu/.ssh
+        echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDEL9RA14AjwIQ/IZVlzCmKyKixg1ZRwdhiOLcnqRUDcs1aPoectUYWj5rfbr6RDM4ScpgRc3UR0dQHI5iSQ6t1x+oRcWfXCvH89EpcM13yoORcvjTCFLLv3/DwelYRFIeo/y/990rArUn8yOzJmTAMsjjvZTlU6XzUAXPzzK/X+YI7tFBNQITZ7V99YV28M6f3uO9XzgWtyrTr+AQY+x8XLOhO1raE3FKgO44Dvjj3qxmlh7F6gxa0W6UKcEC39acGhLW+OJIBrNi/fptNuv/r8ffe/zeNxqFdsZxAxJsu8VgMTtawjLXIpson7hXiJfMps/4RfSQ8Qp/N1PbU4rvjcqlpUDxdbXHX7R76MWuHgqD6Q4JysMVsoa+xC+Ye7li5BaWErw8GnzhJ13FKDPyjiRzzV+D8gDiUQv2nXkTxHGWgCrz/9dl0YYmGmP3w4w91mbRa7cGYRtYt38e//RLZBgOYPvP4UhhZnbzerEuSgXwM6TuOgaJbeCpm5l80gZ9bj+5OevHKY/+efkI9PhcphTBqUOT5MHaiV5nGKJF4jGPwczKcRm1CLV6Yv7AN0pCWjxnAjRSg/ciK10/y/hV58g3j2jNl32z8/cxCgfnyk2tCm/cblD0edb7MjpwdDsj6NzkFk6vZh2l897Y6xdyJ9MUivp9ZkwIp6vECKSo0EQ== staging-docker' > /home/ubuntu/.ssh/authorized_keys
+        chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+        chmod 700 /home/ubuntu/.ssh
+        chmod 600 /home/ubuntu/.ssh/authorized_keys
+        service ssh start
+        tail -f /dev/null
+      "
+    networks:
+      - production-network
+
+  monitor-prod:
+    image: ubuntu:20.04
+    container_name: monitor-prod-01
+    hostname: monitor-prod-01
+    ports:
+      - "9091:9090"
+      - "3001:3000"
+    environment:
+      - DEBIAN_FRONTEND=noninteractive
+    command: >
+      bash -c "
+        apt-get update && apt-get install -y openssh-server sudo python3 curl
+        useradd -m -s /bin/bash ubuntu
+        echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+        mkdir -p /home/ubuntu/.ssh
+        echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDEL9RA14AjwIQ/IZVlzCmKyKixg1ZRwdhiOLcnqRUDcs1aPoectUYWj5rfbr6RDM4ScpgRc3UR0dQHI5iSQ6t1x+oRcWfXCvH89EpcM13yoORcvjTCFLLv3/DwelYRFIeo/y/990rArUn8yOzJmTAMsjjvZTlU6XzUAXPzzK/X+YI7tFBNQITZ7V99YV28M6f3uO9XzgWtyrTr+AQY+x8XLOhO1raE3FKgO44Dvjj3qxmlh7F6gxa0W6UKcEC39acGhLW+OJIBrNi/fptNuv/r8ffe/zeNxqFdsZxAxJsu8VgMTtawjLXIpson7hXiJfMps/4RfSQ8Qp/N1PbU4rvjcqlpUDxdbXHX7R76MWuHgqD6Q4JysMVsoa+xC+Ye7li5BaWErw8GnzhJ13FKDPyjiRzzV+D8gDiUQv2nXkTxHGWgCrz/9dl0YYmGmP3w4w91mbRa7cGYRtYt38e//RLZBgOYPvP4UhhZnbzerEuSgXwM6TuOgaJbeCpm5l80gZ9bj+5OevHKY/+efkI9PhcphTBqUOT5MHaiV5nGKJF4jGPwczKcRm1CLV6Yv7AN0pCWjxnAjRSg/ciK10/y/hV58g3j2jNl32z8/cxCgfnyk2tCm/cblD0edb7MjpwdDsj6NzkFk6vZh2l897Y6xdyJ9MUivp9ZkwIp6vECKSo0EQ== staging-docker' > /home/ubuntu/.ssh/authorized_keys
+        chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+        chmod 700 /home/ubuntu/.ssh
+        chmod 600 /home/ubuntu/.ssh/authorized_keys
+        service ssh start
+        tail -f /dev/null
+      "
+    networks:
+      - production-network
+
+networks:
+  staging-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.2.0/24
+  production-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24 

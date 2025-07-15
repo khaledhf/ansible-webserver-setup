@@ -1,0 +1,28 @@
+---
+- name: restart nginx
+  systemd:
+    name: nginx
+    state: restarted
+    daemon_reload: yes
+
+- name: reload nginx
+  systemd:
+    name: nginx
+    state: reloaded
+
+- name: restart node_exporter
+  systemd:
+    name: node_exporter
+    state: restarted
+    daemon_reload: yes
+
+- name: restart fail2ban
+  systemd:
+    name: fail2ban
+    state: restarted
+    daemon_reload: yes
+
+- name: reload fail2ban
+  systemd:
+    name: fail2ban
+    state: reloaded

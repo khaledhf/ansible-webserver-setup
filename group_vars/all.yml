@@ -1,0 +1,35 @@
+# Global variables for all environments
+app_name: "my-webapp"
+app_version: "1.0.0"
+
+# Nginx configuration
+nginx_user: www-data
+nginx_group: www-data
+nginx_log_dir: /var/log/nginx
+nginx_conf_dir: /etc/nginx
+nginx_sites_available: /etc/nginx/sites-available
+nginx_sites_enabled: /etc/nginx/sites-enabled
+
+# Security settings
+fail2ban_enabled: true
+ufw_enabled: true
+allowed_ports:
+  - 22
+  - 80
+  - 443
+
+# Monitoring settings
+prometheus_port: 9090
+grafana_port: 3000
+node_exporter_port: 9100
+
+# Backup settings
+backup_enabled: true
+backup_retention_days: 30
+backup_dir: /opt/backups
+
+# SSL/TLS settings
+ssl_cert_path: /etc/ssl/certs
+ssl_key_path: /etc/ssl/private
+ssl_cert_file: "{{ app_name }}.crt"
+ssl_key_file: "{{ app_name }}.key" 

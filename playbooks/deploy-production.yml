@@ -1,0 +1,61 @@
+---
+- name: Pre-deployment checks
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Check if production deployment is allowed
+      fail:
+        msg: "Production deployment requires manual approval"
+      when: not ansible_check_mode
+      tags: [production, pre-check]
+
+- name: Deploy to Production Environment
+  hosts: webservers
+  become: yes
+  vars_files:
+    - ../group_vars/all.yml
+  roles:
+    - webserver
+  tags: [production, deploy]
+
+- name: Deploy Monitoring to Production
+  hosts: monitoring
+  become: yes
+  vars_files:
+    - ../group_vars/all.yml
+  roles:
+    - monitoring
+  tags: [production, monitoring]
+
+- name: Run comprehensive health checks
+  hosts: webservers
+  become: no
+  tasks:
+    - name: Check web server health
+      uri:
+        url: "https://{{ ansible_host }}/health"
+        method: GET
+        status_code: 200
+        validate_certs: no
+      register: health_check
+      retries: 5
+      delay: 15
+      tags: [production, health]
+
+    - name: Check SSL certificate
+      uri:
+        url: "https://{{ ansible_host }}/"
+        method: GET
+        validate_certs: yes
+      register: ssl_check
+      retries: 3
+      delay: 10
+      tags: [production, ssl]
+
+    - name: Display deployment results
+      debug:
+        msg: 
+          - "Production deployment completed successfully"
+          - "Health check: {{ health_check.status }}"
+          - "SSL check: {{ ssl_check.status }}"
+      tags: [production, status] 

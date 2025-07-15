@@ -1,0 +1,114 @@
+server {
+    listen 80;
+    listen [::]:80;
+    server_name {{ ansible_hostname }};
+    
+    # Redirect to HTTPS if SSL is enabled
+    {% if ssl_enabled %}
+    return 301 https://$server_name$request_uri;
+    {% endif %}
+    
+    # Rate limiting
+    limit_req zone=api burst=20 nodelay;
+    
+    # Security headers
+    add_header X-Frame-Options DENY;
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection "1; mode=block";
+    
+    # Root directory
+    root /var/www/{{ app_name }};
+    index index.html index.htm;
+    
+    # Logging
+    access_log {{ nginx_log_dir }}/{{ app_name }}_access.log;
+    error_log {{ nginx_log_dir }}/{{ app_name }}_error.log;
+    
+    # Main location block
+    location / {
+        try_files $uri $uri/ =404;
+        
+        # Cache static files
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+    }
+    
+    # Health check endpoint
+    location /health {
+        access_log off;
+        return 200 "healthy\n";
+        add_header Content-Type text/plain;
+    }
+    
+    # Deny access to hidden files
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+}
+
+{% if ssl_enabled %}
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name {{ ansible_hostname }};
+    
+    # SSL Configuration
+    ssl_certificate {{ ssl_cert_path }}/{{ ssl_cert_file }};
+    ssl_certificate_key {{ ssl_key_path }}/{{ ssl_key_file }};
+    
+    # SSL Security Settings
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+    
+    # HSTS
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    
+    # Rate limiting
+    limit_req zone=api burst=20 nodelay;
+    
+    # Security headers
+    add_header X-Frame-Options DENY;
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection "1; mode=block";
+    
+    # Root directory
+    root /var/www/{{ app_name }};
+    index index.html index.htm;
+    
+    # Logging
+    access_log {{ nginx_log_dir }}/{{ app_name }}_ssl_access.log;
+    error_log {{ nginx_log_dir }}/{{ app_name }}_ssl_error.log;
+    
+    # Main location block
+    location / {
+        try_files $uri $uri/ =404;
+        
+        # Cache static files
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+    }
+    
+    # Health check endpoint
+    location /health {
+        access_log off;
+        return 200 "healthy\n";
+        add_header Content-Type text/plain;
+    }
+    
+    # Deny access to hidden files
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+}
+{% endif %} 

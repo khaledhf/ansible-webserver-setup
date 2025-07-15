@@ -1,0 +1,48 @@
+# Ansible
+*.retry
+*.pyc
+__pycache__/
+.ansible/
+ansible_facts/
+
+# SSH Keys
+*.pem
+*.key
+id_rsa*
+staging_key
+prod_key
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Backup files
+*.bak
+*.backup
+
+# Monitoring data
+prometheus_data/
+grafana_data/
+
+# Test artifacts
+.coverage
+htmlcov/
+.pytest_cache/
+molecule/default/instances/ 
